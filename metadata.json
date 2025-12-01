@@ -1,0 +1,5 @@
+{
+  "name": "Copy of ResuMake - AI LaTeX Resume Builder",
+  "description": "A dynamic resume generator tailored for Overleaf templates. Manage multiple profiles (DE, ML, AI) and generate LaTex code instantly with AI-powered content enhancement.",
+  "requestFramePermissions": []
+}
