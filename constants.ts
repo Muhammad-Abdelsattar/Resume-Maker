@@ -15,7 +15,7 @@ export const INITIAL_RESUME_DATA: ResumeData = {
   ],
   settings: {
     themeColor: "#3291c8",
-    fontFamily: 'sans',
+    fontFamily: 'Helvetica',
     fontSize: '11pt',
     documentMargin: 'standard',
     lineHeight: 'standard'

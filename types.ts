@@ -91,7 +91,7 @@ export type ResumeSection = SummarySection | ExperienceSection | ProjectSection 
 
 export interface ResumeSettings {
   themeColor: string;
-  fontFamily: 'sans' | 'serif' | 'mono';
+  fontFamily: 'Helvetica' | 'Arial' | 'Verdana' | 'Roboto' | 'Garamond' | 'Georgia' | 'Times' | 'Courier';
   fontSize: '10pt' | '11pt' | '12pt';
   documentMargin: 'compact' | 'standard' | 'relaxed';
   lineHeight: 'compact' | 'standard' | 'relaxed';

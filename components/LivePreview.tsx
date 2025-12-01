@@ -3,7 +3,6 @@ import React from 'react';
 import { ResumeData, ResumeSection, ExperienceSection, ProjectSection, SkillsSection, SummarySection, CustomSection } from '../types';
 
 // Helper to render HTML content safely
-// Since our input is controlled via RichInput, we trust it slightly, but in production use DOMPurify
 const RichText = ({ content, className = "" }: { content: string, className?: string }) => {
     if (!content) return null;
     return <span className={className} dangerouslySetInnerHTML={{ __html: content }} />;
@@ -18,17 +17,29 @@ const SectionHeader = ({ title, color }: { title: string, color: string }) => (
 export const LivePreview = ({ data }: { data: ResumeData }) => {
   const { sections, settings } = data;
 
-  // Dynamic styles based on settings
+  // Map font settings to CSS stacks
+  const getFontStack = (font: string) => {
+      switch(font) {
+          case 'Helvetica': return 'Helvetica, Arial, sans-serif';
+          case 'Arial': return 'Arial, sans-serif';
+          case 'Verdana': return 'Verdana, Geneva, sans-serif';
+          case 'Roboto': return 'Roboto, sans-serif';
+          case 'Garamond': return '"EB Garamond", Garamond, serif';
+          case 'Georgia': return 'Georgia, serif';
+          case 'Times': return '"Times New Roman", Times, serif';
+          case 'Courier': return '"Courier New", Courier, monospace';
+          default: return 'Helvetica, Arial, sans-serif';
+      }
+  };
+
   const containerStyle = {
-    fontFamily: settings.fontFamily === 'serif' ? 'Times New Roman, serif' : 
-                settings.fontFamily === 'mono' ? 'Courier New, monospace' : 
-                'Inter, sans-serif',
+    fontFamily: getFontStack(settings.fontFamily),
     fontSize: settings.fontSize === '10pt' ? '13px' : 
               settings.fontSize === '12pt' ? '15px' : '14px',
-    padding: settings.documentMargin === 'compact' ? '30px' : 
-             settings.documentMargin === 'relaxed' ? '60px' : '45px',
-    lineHeight: settings.lineHeight === 'compact' ? '1.35' : 
-                settings.lineHeight === 'relaxed' ? '1.8' : '1.6',
+    padding: settings.documentMargin === 'compact' ? '0.3in' : 
+             settings.documentMargin === 'relaxed' ? '0.8in' : '0.5in',
+    lineHeight: settings.lineHeight === 'compact' ? '1.3' : 
+                settings.lineHeight === 'relaxed' ? '1.7' : '1.5',
     color: '#333'
   };
 
@@ -168,8 +179,17 @@ export const LivePreview = ({ data }: { data: ResumeData }) => {
   );
 
   return (
-    <div id="resume-preview" className="print:w-full print:absolute print:top-0 print:left-0 print:m-0 print:p-0">
-      <div className="bg-white shadow-2xl max-w-[850px] mx-auto min-h-[1100px] selection:bg-blue-100 selection:text-blue-900 transition-all duration-300 print:shadow-none print:max-w-none print:w-full print:h-auto" style={containerStyle}>
+    <div id="resume-preview" className="print:w-full print:block">
+      <div 
+        className="bg-white shadow-2xl mx-auto min-h-[1100px] selection:bg-blue-100 selection:text-blue-900 transition-all duration-300 print:shadow-none print:w-full print:h-auto print:m-0"
+        style={{
+            ...containerStyle,
+            // A4 Aspect Ratio Approx width for screen
+            width: '210mm', 
+            maxWidth: '100%',
+            boxSizing: 'border-box'
+        }}
+      >
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold mb-1" style={{ color: '#000' }}>{data.fullName} <span className="text-gray-400 mx-2">|</span> <span className="text-xl font-normal" style={{ color: '#444' }}>{data.roleTitle}</span></h1>

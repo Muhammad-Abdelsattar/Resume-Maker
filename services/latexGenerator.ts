@@ -1,5 +1,4 @@
-
-import { ResumeData, ResumeSection, ExperienceSection, ProjectSection, SkillsSection, SummarySection, CustomSection } from '../types';
+import { ResumeData } from '../types';
 import { htmlToLatex } from '../utils/formatting';
 
 export const generateLatex = (data: ResumeData): string => {
@@ -11,11 +10,20 @@ export const generateLatex = (data: ResumeData): string => {
   if (settings.documentMargin === 'relaxed') marginSize = '0.75in';
 
   // Font package
+  // Default to Helvetica (Sans-Serif) which covers Arial, Verdana, Roboto
   let fontPackage = '\\usepackage[scaled]{helvet} \n\\renewcommand\\familydefault{\\sfdefault}';
-  if (settings.fontFamily === 'serif') {
+  
+  // Handle Serif Fonts
+  // Explicitly check specific serif font names defined in types.ts
+  if (settings.fontFamily === 'Garamond' || settings.fontFamily === 'Georgia' || settings.fontFamily === 'Times') {
     fontPackage = ''; // Default LaTeX is Computer Modern Serif
-  } else if (settings.fontFamily === 'mono') {
-    fontPackage = '\\usepackage{courier}';
+    if (settings.fontFamily === 'Times') {
+       fontPackage = '\\usepackage{mathptmx}';
+    }
+  } 
+  // Handle Monospace
+  else if (settings.fontFamily === 'Courier') {
+    fontPackage = '\\usepackage{courier} \n\\renewcommand\\familydefault{\\ttdefault}';
   }
 
   // Line spacing
@@ -34,7 +42,7 @@ export const generateLatex = (data: ResumeData): string => {
   };
   
   const generateSocials = () => {
-    return `${data.socials.map(s => {
+    return data.socials.map(s => {
       let icon = '';
       if (s.platform === 'Phone') icon = '\\faPhone';
       else if (s.platform === 'Email') icon = '\\faEnvelope';
@@ -44,177 +52,121 @@ export const generateLatex = (data: ResumeData): string => {
       else if (s.platform === 'Portfolio') icon = '\\faGlobe';
       else icon = '\\faLink'; 
       
-      let text = s.value;
+      let text = htmlToLatex(s.value);
       if (s.url) {
-        text = `\\href{${s.url}}{${s.value}}`;
+        text = `\\href{${s.url}}{${text}}`;
       }
       
-      return `${icon} \\hspace{1pt} ${text}`;
-    }).join(' \\hspace{1pt} \\textbf{$|$} \\hspace{1pt} \n    ')}`;
+      return `${icon} \\hspace{1mm} ${text}`;
+    }).join(' \\quad|\\quad ');
   };
-
-  const generateSummary = (section: SummarySection) => {
-    return `
-%----------${section.title.toUpperCase()}----------
-\\section{${section.title}}
-\\small ${htmlToLatex(section.content)}
-`;
-  };
-
-  const generateExperience = (section: ExperienceSection) => {
-    const items = section.items.map(item => {
-      const bullets = item.bullets && item.bullets.length > 0 
-        ? `\\resumeItemListStart
-        ${item.bullets.map(b => `\\resumeItem{${htmlToLatex(b)}}`).join('\n        ')}
-      \\resumeItemListEnd` 
-        : '';
-      
-      const desc = item.description ? `\\resumeItem{${htmlToLatex(item.description)}}` : '';
-      const listContent = (desc || bullets) ? `
-      \\resumeItemListStart
-        ${desc}
-        ${item.bullets.map(b => `\\resumeItem{${htmlToLatex(b)}}`).join('\n        ')}
-      \\resumeItemListEnd` : '';
-      
-      return `
-    \\resumeSubheading
-      {${htmlToLatex(item.title)}}{${htmlToLatex(item.date)}}
-      {${htmlToLatex(item.subtitle)}}{${htmlToLatex(item.location)}}
-      ${listContent}`;
-    }).join('');
-
-    return `
-%-----------${section.title.toUpperCase()}-----------
-\\section{${section.title}}
-  \\resumeSubHeadingListStart
-    ${items}
-  \\resumeSubHeadingListEnd
-`;
-  };
-
-  const generateProjects = (section: ProjectSection) => {
-    const items = section.items.map(proj => {
-      // Build dynamic links
-      const linkLatex = proj.links.map(l => {
-         let icon = '\\faLink';
-         if(l.label.toLowerCase().includes('github') || l.label.toLowerCase().includes('code')) icon = '\\faGithub';
-         if(l.label.toLowerCase().includes('demo') || l.label.toLowerCase().includes('live')) icon = '\\faExternalLink*';
-         if(l.label.toLowerCase().includes('video') || l.label.toLowerCase().includes('youtube')) icon = '\\faYoutube';
-         
-         return `\\href{${l.url}}{${icon} ${l.label}}`;
-      }).join(' \\hspace{8px} $|$ \\hspace{8px} ');
-
-      const linkPart = linkLatex ? `\\hspace{8px} $|$ \\hspace{8px} ${linkLatex}` : '';
-
-      return `
-\\resumeProject
-  {\\normalsize \\textbf{${htmlToLatex(proj.title)}} ${linkPart}}
-  {}
-  {${htmlToLatex(proj.skills)}}
-  {${htmlToLatex(proj.tools)}}
-  {
-    ${proj.bullets.map(b => `\\item ${htmlToLatex(b)}`).join('\n    ')}
-  }`;
-    }).join('\n');
-
-    return `
-%-----------${section.title.toUpperCase()}-----------
-\\section{${section.title}}
-\\begin{itemize}[leftmargin=0.05in, label={}]
-${items}
-\\end{itemize}
-`;
-  };
-
-  const generateSkills = (section: SkillsSection) => {
-    const items = section.items.map(cat => 
-      `  ${htmlToLatex(cat.category)} & ${htmlToLatex(cat.items)} \\\\`
-    ).join('\n');
-
-    return `
-%-----------${section.title.toUpperCase()}-----------
-\\section{${section.title}}
-{
-\\renewcommand{\\arraystretch}{1.1} 
-\\begin{tabular}{ @{} >{\\bfseries}l @{\\hspace{4ex}} l }
-${items}
-\\end{tabular}
-}
-`;
-  };
-
-  const generateCustom = (section: CustomSection) => {
-    const items = section.items.map(row => {
-      
-      // Calculate latex tabular structure
-      // Format: \begin{tabular*}{\textwidth}{p{0.2\textwidth} p{0.8\textwidth}} ...
-      
-      if(row.columns.length === 0) return '';
-
-      // Normalize widths to ensure they don't break page (slight reduction for padding)
-      const totalWidth = row.columns.reduce((sum, col) => sum + col.width, 0);
-      const definitions = row.columns.map(col => {
-         // p{width} column type. Alignments need manual adjustment or array package, 
-         // but basic p{} is justified/left. For explicit align, we use ragged right inside.
-         const ratio = (col.width / 100) * 0.98; // 0.98 to fit textwidth safely
-         return `p{${ratio.toFixed(2)}\\textwidth}`;
-      }).join('');
-
-      const cells = row.columns.map(col => {
-         const content = htmlToLatex(col.content);
-         if (col.alignment === 'right') return `\\raggedleft ${content}`;
-         if (col.alignment === 'center') return `\\centering ${content}`;
-         return `\\raggedright ${content}`;
-      }).join(' & ');
-
-      const tabular = `
-      \\begin{tabular}{${definitions}}
-         ${cells}
-      \\end{tabular}
-      `;
-
-      if (row.hasBullet) {
-        return `\\item ${tabular}`;
-      } else {
-        return `\\item[] ${tabular} \\vspace{2pt}`;
-      }
-    }).join('\n');
-
-    return `
-%-----------${section.title.toUpperCase()}-----------
-\\section{${section.title}}
-  \\resumeSubHeadingListStart
-    ${items}
-  \\resumeSubHeadingListEnd
-    `;
-  }
 
   const sectionsLatex = data.sections.map(section => {
-    switch (section.type) {
-      case 'summary': return generateSummary(section as SummarySection);
-      case 'education':
-      case 'experience': return generateExperience(section as ExperienceSection);
-      case 'projects': return generateProjects(section as ProjectSection);
-      case 'skills': return generateSkills(section as SkillsSection);
-      case 'custom': return generateCustom(section as CustomSection);
-      default: return '';
+    let content = '';
+    
+    // Section Title
+    const title = `\\section{${section.title.toUpperCase()}}`;
+
+    if (section.type === 'summary') {
+      content = htmlToLatex((section as any).content);
+    } 
+    else if (section.type === 'experience' || section.type === 'education') {
+      content = (section as any).items.map((item: any) => {
+        let latex = `\\resumeSubheading\n{${htmlToLatex(item.title)}}{${htmlToLatex(item.date)}}\n{${htmlToLatex(item.subtitle)}}{${htmlToLatex(item.location)}}\n`;
+        
+        if (item.description) {
+            latex += `\\small{${htmlToLatex(item.description)}} \\vspace{1mm}\n`;
+        }
+        
+        if (item.bullets && item.bullets.length > 0) {
+           latex += `\\resumeItemListStart\n`;
+           item.bullets.forEach((b: string) => {
+               latex += `\\resumeItem{${htmlToLatex(b)}}\n`;
+           });
+           latex += `\\resumeItemListEnd\n`;
+        }
+        return latex;
+      }).join('');
     }
-  }).join('\n');
+    else if (section.type === 'projects') {
+      content = (section as any).items.map((item: any) => {
+        // Project Title + Links
+        let titleLine = `\\textbf{${htmlToLatex(item.title)}}`;
+        if (item.links && item.links.length > 0) {
+            item.links.forEach((l: any) => {
+                titleLine += ` $|$ \\href{${l.url}}{\\small{${htmlToLatex(l.label)}}}`;
+            });
+        }
+        
+        let latex = `\\resumeProjectHeading\n{${titleLine}}{}\n`;
+        
+        // Skills & Tools
+        if(item.skills || item.tools) {
+            latex += `\\small{`;
+            if(item.skills) latex += `\\textbf{Skills:} ${htmlToLatex(item.skills)} `;
+            if(item.skills && item.tools) latex += `\\hfill `;
+            if(item.tools) latex += `\\textbf{Tools:} ${htmlToLatex(item.tools)}`;
+            latex += `} \\vspace{-5pt}\n`;
+        }
+        
+        if (item.bullets && item.bullets.length > 0) {
+           latex += `\\resumeItemListStart\n`;
+           item.bullets.forEach((b: string) => {
+               latex += `\\resumeItem{${htmlToLatex(b)}}\n`;
+           });
+           latex += `\\resumeItemListEnd\n`;
+        }
+        return latex;
+      }).join('');
+    }
+    else if (section.type === 'skills') {
+      content = `\\begin{itemize}[leftmargin=0.15in, label={}]\n\\small{\item\n`;
+      content += (section as any).items.map((item: any) => {
+        return `\\textbf{${htmlToLatex(item.category)}:}{ ${htmlToLatex(item.items)}} \\\\ \n`;
+      }).join('');
+      content += `}\n\\end{itemize}`;
+    }
+    else if (section.type === 'custom') {
+       // Custom Grid Layout
+       content = (section as any).items.map((row: any) => {
+          let rowLatex = '';
+          
+          if(row.hasBullet) {
+              rowLatex += `\\resumeItemListStart\n\\item `;
+          } else {
+              rowLatex += `\\noindent `;
+          }
+          
+          const cols = row.columns.map((col: any) => {
+             let text = htmlToLatex(col.content);
+             // Basic formatting for columns in tabular-like structure or minipage
+             // For simplicity in this template, we use minipages to allow wrapping text in columns
+             return `\\begin{minipage}[t]{${(col.width/100) - 0.02}\\textwidth}\n${col.alignment === 'center' ? '\\centering ' : col.alignment === 'right' ? '\\raggedleft ' : ''}${text}\n\\end{minipage}`;
+          }).join('\\hfill ');
+          
+          rowLatex += cols;
+          
+          if(row.hasBullet) {
+              rowLatex += `\\resumeItemListEnd\n`;
+          } else {
+              rowLatex += `\\\\\n`;
+          }
+          return rowLatex;
+       }).join('');
+    }
 
-  // Generate Footer (Additional Info)
-  const footerLatex = data.additionalInfo.length > 0 ? `
-\\section{Additional}
- \\begin{itemize}[leftmargin=0.15in, label={}]
-    \\small{\\item{
-     ${data.additionalInfo.map(info => htmlToLatex(info.content)).join(' \\hspace{15pt} \\textbf{$|$} \\hspace{15pt} ')}
-    }}
- \\end{itemize}
-  ` : '';
+    return `${title}\n${content}`;
+  }).join('\n\n');
+  
+  // Footer
+  let footer = '';
+  if (data.additionalInfo.length > 0) {
+      footer = `\\section{ADDITIONAL}\n\\begin{center}\n\\small\n`;
+      footer += data.additionalInfo.map((info) => htmlToLatex(info.content)).join(' $\\mid$ ');
+      footer += `\n\\end{center}`;
+  }
 
-  return `%-----------------------------------------------------------------------------------------------------------------------------------------------%
-%	Generated by ResuMake
-%-----------------------------------------------------------------------------------------------------------------------------------------------%
-
+  return `
 \\documentclass[letterpaper,${settings.fontSize}]{article}
 
 \\usepackage{latexsym}
@@ -232,11 +184,13 @@ ${items}
 \\usepackage{multicol}
 ${fontPackage}
 
-%----------------------------------------------------------------------------------------
-%	CUSTOM COLORS & SETTINGS
-%----------------------------------------------------------------------------------------
-\\definecolor{mainblue}{RGB}{${hexToRgb(settings.themeColor)}} 
-\\definecolor{darkGrey}{RGB}{50, 50, 50}
+\\input{glyphtounicode}
+
+% Margins
+\\usepackage[margin=${marginSize}]{geometry}
+
+% Spacing
+\\linespread{${lineSpread}}
 
 \\pagestyle{fancy}
 \\fancyhf{} 
@@ -244,115 +198,59 @@ ${fontPackage}
 \\renewcommand{\\headrulewidth}{0pt}
 \\renewcommand{\\footrulewidth}{0pt}
 
-% Adjust margins based on settings
-\\addtolength{\\oddsidemargin}{-${marginSize}}
-\\addtolength{\\evensidemargin}{-${marginSize}}
-\\addtolength{\\textwidth}{${parseFloat(marginSize) * 2 + 0.2}in}
-\\addtolength{\\topmargin}{-${marginSize}}
-\\addtolength{\\textheight}{${parseFloat(marginSize) * 2 + 0.1}in}
-
 \\urlstyle{same}
 
 \\raggedbottom
 \\raggedright
 \\setlength{\\tabcolsep}{0in}
 
-% Line spacing
-\\linespread{${lineSpread}}
-
 % Sections formatting
-\\titlespacing{\\section}{0pt}{10pt}{12pt}
 \\titleformat{\\section}{
-  \\vspace{-8pt}\\scshape\\raggedright\\Large\\bfseries\\color{mainblue}
-}{}{0em}{}[\\color{mainblue}\\titlerule \\vspace{-8pt}]
+  \\vspace{-4pt}\\scshape\\raggedright\\large\\color{RGB}{${hexToRgb(settings.themeColor)}}
+}{}{0em}{}[\\color{RGB}{${hexToRgb(settings.themeColor)}}\\titlerule \\vspace{-5pt}]
 
-%----------------------------------------------------------------------------------------
-%	CUSTOM COMMANDS
-%----------------------------------------------------------------------------------------
-
-% Education/Job Entry
-\\newcommand{\\resumeSubheading}[4]{
-  \\vspace{-1pt}\\item
-    \\begin{tabular*}{0.98\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
-      \\textbf{#1} & #2 \\\\
-      #3 & #4 \\\\
-    \\end{tabular*}\\vspace{-5pt}
-}
-
-% PROJECT COMMAND (Fixed Logic)
-\\newcommand{\\resumeProjectHeading}[5]{
-    \\item
-    \\begin{tabular*}{0.98\\textwidth}{l@{\\extracolsep{\\fill}}r}
-      \\textbf{#1} & 
-      \\href{#4}{\\faGithub\\ Source Code}
-      \\if\\relax\\detokenize{#5}\\relax\\else
-         \\hspace{3pt} \\textbf{$|$} \\hspace{5pt} \\href{#5}{\\faExternalLink*\\ Live Demo}
-      \\fi \\\\
-    \\end{tabular*}
-    \\vspace{0pt}
-    \\begin{itemize}[leftmargin=0.05in, label={}]
-        \\small\\item \\textbf{Skills:} #2 \\\\ \\textbf{Tools \\& Tech:} #3
-    \\end{itemize}
-    \\vspace{2pt}
-}
-
+% Custom commands
 \\newcommand{\\resumeItem}[1]{
   \\item\\small{
     {#1 \\vspace{-2pt}}
   }
 }
 
-% Custom command for Projects to save space but keep details
-\\newcommand{\\resumeProject}[5]{
-  \\item
-  % Line 1: Title and Link
-  {#1} 
-  \\vspace{3pt} % Reduce space between Title and Skills columns
-  \\\\
-  % Line 2: The Two Columns (Skills Left, Tools Right)
-  \\begin{minipage}[t]{0.40\\textwidth} % Narrower for Skills
-    \\raggedright
-    \\textbf{Skills:} #3
-  \\end{minipage}%
-  \\hfill % Pushes the next column to the right
-  \\begin{minipage}[t]{0.58\\textwidth} % Wider for Tools list
-    \\raggedright
-    \\textbf{Tools:} #4
-  \\end{minipage}
-  \\vspace{0pt} % Reduce space between Tools and Bullets
-  % Line 3: Bullet Points
-  \\begin{itemize}[leftmargin=0.15in, label=\\textbullet, noitemsep, topsep=0pt]
-    #5
-  \\end{itemize}
-
-  \\vspace{4pt}
+\\newcommand{\\resumeSubheading}[4]{
+  \\vspace{-2pt}\\item
+    \\begin{tabular*}{0.97\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
+      \\textbf{#1} & #2 \\\\
+      \\textit{\\small#3} & \\textit{\\small #4} \\\\
+    \\end{tabular*}\\vspace{-7pt}
 }
 
+\\newcommand{\\resumeProjectHeading}[2]{
+    \\item
+    \\begin{tabular*}{0.97\\textwidth}{l@{\\extracolsep{\\fill}}r}
+      \\small#1 & #2 \\\\
+    \\end{tabular*}\\vspace{-7pt}
+}
 
-% Define custom list environment for bullet points
-\\newcommand{\\resumeSubHeadingListStart}{\\begin{itemize}[leftmargin=0.05in, label={}]}
-\\newcommand{\\resumeSubHeadingListEnd}{\\end{itemize}}
-\\newcommand{\\resumeItemListStart}{\\begin{itemize}[leftmargin=0.15in, label=\\textbullet]} % Forced Bullet
-\\newcommand{\\resumeItemListEnd}{\\end{itemize}\\vspace{-2pt}}
+\\newcommand{\\resumeSubItem}[1]{\\resumeItem{#1}\\vspace{-4pt}}
 
-%----------------------------------------------------------------------------------------
-%	DOCUMENT START
-%----------------------------------------------------------------------------------------
+\\renewcommand\\labelitemii{$\\vcenter{\\hbox{\\tiny$\\bullet$}}$}
+
+\\newcommand{\\resumeItemListStart}{\\begin{itemize}}
+\\newcommand{\\resumeItemListEnd}{\\end{itemize}\\vspace{-5pt}}
+
 \\begin{document}
 
-%----------HEADER----------
+% Header
 \\begin{center}
-    {\\huge \\textbf{${data.fullName}} \\textbf{$|$} \\Large \\color{darkGrey} ${data.roleTitle}} \\\\ \\vspace{3pt}
-    ${generateSocials()}
-   
+    \\textbf{\\Huge \\scshape ${htmlToLatex(data.fullName)}} \\\\ \\vspace{1pt}
+    \\small \\color{gray} ${htmlToLatex(data.roleTitle)} \\\\ \\vspace{4pt}
+    \\small ${generateSocials()}
 \\end{center}
-
-\\vspace{2pt}
 
 ${sectionsLatex}
 
-${footerLatex}
+${footer}
 
 \\end{document}
-`;
+  `;
 };
