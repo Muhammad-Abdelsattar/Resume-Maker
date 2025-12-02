@@ -15,14 +15,18 @@
       
       /* Rich Text Editor Styles */
       .rich-input { min-height: 42px; }
-      .rich-input:empty::before {
+      .rich-input[contenteditable]:empty::before {
         content: attr(data-placeholder);
         color: #94a3b8; /* Slate-400 */
         pointer-events: none;
         display: block;
       }
       .rich-input b, .rich-input strong { font-weight: bold; }
-      .rich-input i, .rich-input em { font-style: italic; }
+      
+      /* Only apply italic to i tags that are NOT icons (no fa- classes) */
+      .rich-input i:not([class*="fa-"]), .rich-input em { font-style: italic; }
+      .rich-input i[class*="fa-"] { font-style: normal; } /* Ensure icons are normal */
+
       .rich-input a { color: #2563eb; text-decoration: underline; cursor: pointer; }
 
       /* Custom Scrollbars */
