@@ -65,15 +65,13 @@ export const IconPicker = ({ onSelect, onClose, className = "" }: { onSelect: (i
       <div className="fixed inset-0 z-[100]" onClick={onClose}></div>
 
       {/* Picker Container */}
+      {/* 
+          Using 'absolute' by default allows positioning relative to the trigger button.
+          The className prop allows forcing 'right-full' (left of button) or 'left-full' (right of button).
+          On mobile (small screens), we might still want it centered or handled carefully, but requested behavior is "to the left".
+       */}
       <div 
-        className={`bg-white border border-slate-200 shadow-xl rounded-xl p-3 w-64 z-[101]
-        /* Mobile: Fixed Center Modal */
-        fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-        /* Desktop: Absolute Dropdown (Position controlled by parent/className) */
-        sm:absolute sm:top-full sm:translate-x-0 sm:translate-y-2
-        /* Default Desktop Alignment: Left */
-        ${className || 'sm:left-0'} 
-        `}
+        className={`bg-white border border-slate-200 shadow-xl rounded-xl p-3 w-64 z-[101] absolute ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-2 relative">

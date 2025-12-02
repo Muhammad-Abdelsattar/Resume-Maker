@@ -190,6 +190,8 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({ section, onUpdate,
                                             setIconPickerIdx(null);
                                         }}
                                         onClose={() => setIconPickerIdx(null)}
+                                        // Position to the left of the button
+                                        className="right-full mr-2 top-0"
                                     />
                                 )}
                            </div>
@@ -331,7 +333,8 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({ section, onUpdate,
                 </button>
             </div>
             
-            <div className="flex flex-row gap-2 mb-2 p-3 bg-slate-100 rounded-xl border border-slate-200 overflow-x-auto custom-scrollbar">
+            {/* Added pt-12 to allow space for the absolute toolbar of RichInput */}
+            <div className="flex flex-row gap-2 mb-2 pt-12 px-3 pb-3 bg-slate-100 rounded-xl border border-slate-200 overflow-x-auto custom-scrollbar">
                {row.columns.map((col, cIdx) => (
                   <div key={col.id} className="flex flex-col gap-2 transition-all min-w-[150px]" style={{ flexGrow: col.width, width: `${Math.max(15, col.width)}%` }}>
                      <div className="flex gap-1 items-center bg-white p-1 rounded border border-slate-200 shadow-sm">

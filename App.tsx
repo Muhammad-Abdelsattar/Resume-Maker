@@ -202,6 +202,8 @@ export default function App() {
                                             <IconPicker 
                                                 onSelect={(icon) => { updateSocial(idx, 'icon', icon); setIconPickerIdx(null); }}
                                                 onClose={() => setIconPickerIdx(null)}
+                                                // Position to the right of the button
+                                                className="left-full ml-2 top-0 z-50"
                                             />
                                         )}
                                     </div>
