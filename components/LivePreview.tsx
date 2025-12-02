@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { ResumeData, ResumeSection, ExperienceSection, ProjectSection, SkillsSection, SummarySection, CustomSection } from '../types';
+import { ResumeData, ResumeSection, ExperienceSection, ProjectSection, SkillsSection, SummarySection, CustomSection, AdditionalSection } from '../types';
 
-// Helper to render HTML content safely
 const RichText = ({ content, className = "" }: { content: string, className?: string }) => {
     if (!content) return null;
     return <span className={className} dangerouslySetInnerHTML={{ __html: content }} />;
@@ -17,7 +16,6 @@ const SectionHeader = ({ title, color }: { title: string, color: string }) => (
 export const LivePreview = ({ data }: { data: ResumeData }) => {
   const { sections, settings } = data;
 
-  // Map font settings to CSS stacks
   const getFontStack = (font: string) => {
       switch(font) {
           case 'Helvetica': return 'Helvetica, Arial, sans-serif';
@@ -48,27 +46,17 @@ export const LivePreview = ({ data }: { data: ResumeData }) => {
   const renderSocials = () => {
     return (
       <div className="flex flex-wrap justify-center items-center gap-3 text-sm mb-2" style={{ color: '#444' }}>
-        {data.socials.map((s, idx) => {
-          let iconClass = 'fas fa-link';
-          if (s.platform === 'Phone') iconClass = 'fas fa-phone';
-          else if (s.platform === 'Email') iconClass = 'fas fa-envelope';
-          else if (s.platform === 'Location') iconClass = 'fas fa-map-marker-alt';
-          else if (s.platform === 'LinkedIn') iconClass = 'fab fa-linkedin';
-          else if (s.platform === 'GitHub') iconClass = 'fab fa-github';
-          else if (s.platform === 'Portfolio') iconClass = 'fas fa-globe';
-          
-          return (
+        {data.socials.map((s, idx) => (
             <React.Fragment key={s.id}>
               {idx > 0 && <span className="font-bold text-gray-400">|</span>}
               <div className="flex items-center gap-1.5">
-                <i className={`${iconClass}`} style={{ color: '#333' }}></i>
+                <i className={`${s.icon || 'fas fa-link'}`} style={{ color: '#333' }}></i>
                 <span style={{ color: '#333' }}>
                   {s.url ? <a href={s.url} target="_blank" rel="noreferrer" className="hover:underline" style={{ color: 'inherit' }}>{s.value}</a> : s.value}
                 </span>
               </div>
             </React.Fragment>
-          );
-        })}
+        ))}
       </div>
     );
   };
@@ -113,7 +101,7 @@ export const LivePreview = ({ data }: { data: ResumeData }) => {
                           <React.Fragment key={l.id}>
                              <span className="mx-2">|</span>
                              <a href={l.url} className="hover:underline flex items-center gap-1" style={{ color: linkColor }}>
-                                <i className="fas fa-external-link-alt text-xs"></i> {l.label}
+                                <i className={`${l.icon || 'fas fa-link'} text-xs`}></i> {l.label}
                              </a>
                           </React.Fragment>
                       ))}
@@ -178,58 +166,45 @@ export const LivePreview = ({ data }: { data: ResumeData }) => {
     </div>
   );
 
+  const renderAdditional = (section: AdditionalSection) => (
+     <div className="text-sm pl-4 flex flex-wrap gap-6 justify-center" style={{ color: '#333' }}>
+        {section.items.map((info, idx) => (
+            <div key={info.id} className="flex items-center gap-2">
+                    {idx > 0 && <span className="text-gray-300 font-bold">|</span>}
+                    <RichText content={info.content} />
+            </div>
+        ))}
+     </div>
+  );
+
   return (
     <div id="resume-preview" className="print:w-full print:block">
       <div 
         className="bg-white shadow-2xl mx-auto min-h-[1100px] selection:bg-blue-100 selection:text-blue-900 transition-all duration-300 print:shadow-none print:w-full print:h-auto print:m-0"
         style={{
             ...containerStyle,
-            // A4 Aspect Ratio Approx width for screen
             width: '210mm', 
             maxWidth: '100%',
             boxSizing: 'border-box'
         }}
       >
-        {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold mb-1" style={{ color: '#000' }}>{data.fullName} <span className="text-gray-400 mx-2">|</span> <span className="text-xl font-normal" style={{ color: '#444' }}>{data.roleTitle}</span></h1>
           {renderSocials()}
         </div>
 
-        {/* Dynamic Sections */}
         {sections.map(section => (
           <div key={section.id}>
             <SectionHeader title={section.title} color={settings.themeColor} />
             
-            {section.type === 'summary' && (
-              <div className="text-sm" style={{ color: '#333' }}><RichText content={(section as SummarySection).content} /></div>
-            )}
-
+            {section.type === 'summary' && <div className="text-sm" style={{ color: '#333' }}><RichText content={(section as SummarySection).content} /></div>}
             {(section.type === 'experience' || section.type === 'education') && renderExperience(section as ExperienceSection)}
-            
             {section.type === 'projects' && renderProjects(section as ProjectSection)}
-            
             {section.type === 'skills' && renderSkills(section as SkillsSection)}
-
             {section.type === 'custom' && renderCustom(section as CustomSection)}
+            {section.type === 'additional' && renderAdditional(section as AdditionalSection)}
           </div>
         ))}
-
-        {/* Footer / Languages */}
-        {data.additionalInfo.length > 0 && (
-            <>
-                <SectionHeader title="Additional" color={settings.themeColor} />
-                <div className="text-sm pl-4 flex flex-wrap gap-6 justify-center" style={{ color: '#333' }}>
-                    {data.additionalInfo.map((info, idx) => (
-                        <div key={info.id} className="flex items-center gap-2">
-                             {idx > 0 && <span className="text-gray-300 font-bold">|</span>}
-                             <RichText content={info.content} />
-                        </div>
-                    ))}
-                </div>
-            </>
-        )}
-
       </div>
     </div>
   );

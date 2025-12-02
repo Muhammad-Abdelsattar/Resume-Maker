@@ -4,8 +4,7 @@ import { ResumeData, ResumeSection, SectionType, SummarySection } from './types'
 import { INITIAL_RESUME_DATA } from './constants';
 import { generateLatex } from './services/latexGenerator';
 import { SectionEditor } from './components/SectionEditor';
-import { Input, IconButton } from './components/UI';
-import { RichInput } from './components/RichInput';
+import { Input, IconButton, IconPicker } from './components/UI';
 import { LivePreview } from './components/LivePreview';
 import { generateSummary } from './services/geminiService';
 
@@ -14,8 +13,8 @@ export default function App() {
   const [latexCode, setLatexCode] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'editor' | 'preview' | 'code'>('editor');
   const [isCopied, setIsCopied] = useState(false);
+  const [iconPickerIdx, setIconPickerIdx] = useState<number | null>(null);
 
-  // Generate LaTeX whenever data changes
   useEffect(() => {
     const code = generateLatex(data);
     setLatexCode(code);
@@ -67,6 +66,8 @@ export default function App() {
       newSection = { id, type: 'summary', title: 'Summary', content: '' };
     } else if (type === 'education') {
       newSection = { id, type: 'education', title: 'Education', items: [] };
+    } else if (type === 'additional') {
+      newSection = { id, type: 'additional', title: 'Additional', items: [] };
     } else {
       newSection = { id, type: 'custom', title: 'Custom Section', items: [] };
     }
@@ -97,7 +98,6 @@ export default function App() {
      }
   };
 
-  // UI Components
   const TabButton = ({ id, label, icon }: any) => (
     <button 
       onClick={() => setActiveTab(id)}
@@ -109,7 +109,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col h-screen text-slate-800 font-sans print:h-auto print:bg-white print:overflow-visible">
-      {/* Header - Hidden on Print */}
       <header className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shrink-0 z-20 print:hidden shadow-sm">
         <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-blue-200 shadow-lg">R</div>
@@ -126,51 +125,30 @@ export default function App() {
         </div>
 
         <div className="flex gap-2">
-            <button 
-                onClick={handleDownloadPDF}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all shadow-lg shadow-blue-200 active:scale-95"
-            >
-                <i className="fas fa-print"></i>
-                Print / PDF
+            <button onClick={handleDownloadPDF} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all shadow-lg shadow-blue-200 active:scale-95">
+                <i className="fas fa-print"></i> Print / PDF
             </button>
-            <button 
-                onClick={copyToClipboard}
-                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-200 active:scale-95"
-            >
-                {isCopied ? <i className="fas fa-check text-green-400"></i> : <i className="fas fa-copy"></i>}
-                {isCopied ? 'Copied!' : 'Copy LaTeX'}
+            <button onClick={copyToClipboard} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-200 active:scale-95">
+                {isCopied ? <i className="fas fa-check text-green-400"></i> : <i className="fas fa-copy"></i>} {isCopied ? 'Copied!' : 'Copy LaTeX'}
             </button>
         </div>
       </header>
 
-      {/* Main Content - Maximized width */}
       <div className="flex-1 overflow-hidden flex relative print:overflow-visible print:block print:h-auto w-full">
-        
-        {/* Editor Panel */}
         <div className={`flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth custom-scrollbar ${activeTab === 'editor' ? 'block' : 'hidden'} w-full mx-auto bg-white print:hidden`}>
             
-            {/* Settings Bar */}
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 max-w-5xl mx-auto">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Document Settings</h3>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                     <div>
                         <label className="block text-[10px] font-semibold text-slate-500 mb-1">Theme Color</label>
                         <div className="flex items-center gap-2">
-                            <input 
-                                type="color" 
-                                value={data.settings.themeColor} 
-                                onChange={(e) => setData({...data, settings: {...data.settings, themeColor: e.target.value}})}
-                                className="w-8 h-8 rounded cursor-pointer border-0 p-0"
-                            />
+                            <input type="color" value={data.settings.themeColor} onChange={(e) => setData({...data, settings: {...data.settings, themeColor: e.target.value}})} className="w-8 h-8 rounded cursor-pointer border-0 p-0" />
                         </div>
                     </div>
                     <div>
                         <label className="block text-[10px] font-semibold text-slate-500 mb-1">Font</label>
-                        <select 
-                            value={data.settings.fontFamily} 
-                            onChange={(e) => setData({...data, settings: {...data.settings, fontFamily: e.target.value as any}})}
-                            className="w-full text-xs p-1.5 rounded border border-slate-200 bg-slate-50 focus:border-blue-400 outline-none"
-                        >
+                        <select value={data.settings.fontFamily} onChange={(e) => setData({...data, settings: {...data.settings, fontFamily: e.target.value as any}})} className="w-full text-xs p-1.5 rounded border border-slate-200 bg-slate-50 focus:border-blue-400 outline-none">
                             <option value="Helvetica">Helvetica</option>
                             <option value="Arial">Arial</option>
                             <option value="Verdana">Verdana</option>
@@ -183,11 +161,7 @@ export default function App() {
                     </div>
                     <div>
                         <label className="block text-[10px] font-semibold text-slate-500 mb-1">Size</label>
-                        <select 
-                            value={data.settings.fontSize} 
-                            onChange={(e) => setData({...data, settings: {...data.settings, fontSize: e.target.value as any}})}
-                            className="w-full text-xs p-1.5 rounded border border-slate-200 bg-slate-50 focus:border-blue-400 outline-none"
-                        >
+                        <select value={data.settings.fontSize} onChange={(e) => setData({...data, settings: {...data.settings, fontSize: e.target.value as any}})} className="w-full text-xs p-1.5 rounded border border-slate-200 bg-slate-50 focus:border-blue-400 outline-none">
                             <option value="10pt">Small (10pt)</option>
                             <option value="11pt">Medium (11pt)</option>
                             <option value="12pt">Large (12pt)</option>
@@ -195,11 +169,7 @@ export default function App() {
                     </div>
                     <div>
                         <label className="block text-[10px] font-semibold text-slate-500 mb-1">Margins</label>
-                        <select 
-                            value={data.settings.documentMargin} 
-                            onChange={(e) => setData({...data, settings: {...data.settings, documentMargin: e.target.value as any}})}
-                            className="w-full text-xs p-1.5 rounded border border-slate-200 bg-slate-50 focus:border-blue-400 outline-none"
-                        >
+                        <select value={data.settings.documentMargin} onChange={(e) => setData({...data, settings: {...data.settings, documentMargin: e.target.value as any}})} className="w-full text-xs p-1.5 rounded border border-slate-200 bg-slate-50 focus:border-blue-400 outline-none">
                             <option value="compact">Compact</option>
                             <option value="standard">Standard</option>
                             <option value="relaxed">Relaxed</option>
@@ -207,11 +177,7 @@ export default function App() {
                     </div>
                     <div>
                         <label className="block text-[10px] font-semibold text-slate-500 mb-1">Line Spacing</label>
-                        <select 
-                            value={data.settings.lineHeight} 
-                            onChange={(e) => setData({...data, settings: {...data.settings, lineHeight: e.target.value as any}})}
-                            className="w-full text-xs p-1.5 rounded border border-slate-200 bg-slate-50 focus:border-blue-400 outline-none"
-                        >
+                        <select value={data.settings.lineHeight} onChange={(e) => setData({...data, settings: {...data.settings, lineHeight: e.target.value as any}})} className="w-full text-xs p-1.5 rounded border border-slate-200 bg-slate-50 focus:border-blue-400 outline-none">
                             <option value="compact">Compact</option>
                             <option value="standard">Standard</option>
                             <option value="relaxed">Relaxed</option>
@@ -221,7 +187,6 @@ export default function App() {
             </div>
 
             <div className="max-w-5xl mx-auto">
-                {/* Profile Header Editor */}
                 <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-6">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="font-bold text-lg text-slate-800">Profile Details</h2>
@@ -241,6 +206,20 @@ export default function App() {
                         <label className="text-xs font-semibold text-slate-500 uppercase block">Contact Info & Socials</label>
                         {data.socials.map((social, idx) => (
                             <div key={social.id} className="flex gap-2 items-center group">
+                                <div className="relative">
+                                    <button 
+                                        onClick={() => setIconPickerIdx(idx)}
+                                        className="w-10 h-10 flex items-center justify-center bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-lg transition-colors border border-slate-200"
+                                    >
+                                        <i className={social.icon || 'fas fa-link'}></i>
+                                    </button>
+                                    {iconPickerIdx === idx && (
+                                        <IconPicker 
+                                            onSelect={(icon) => { updateSocial(idx, 'icon', icon); setIconPickerIdx(null); }}
+                                            onClose={() => setIconPickerIdx(null)}
+                                        />
+                                    )}
+                                </div>
                                 <select 
                                     value={social.platform}
                                     onChange={e => updateSocial(idx, 'platform', e.target.value)}
@@ -254,73 +233,17 @@ export default function App() {
                                     <option value="Portfolio">Portfolio</option>
                                     <option value="Other">Other</option>
                                 </select>
-                                <Input 
-                                    value={social.value} 
-                                    onChange={e => updateSocial(idx, 'value', e.target.value)} 
-                                    placeholder="Value (e.g. +1 234...)" 
-                                    className="bg-white border-slate-200"
-                                />
-                                <Input 
-                                    value={social.url || ''} 
-                                    onChange={e => updateSocial(idx, 'url', e.target.value)} 
-                                    placeholder="URL (Optional)" 
-                                    className="text-blue-500 bg-white border-slate-200"
-                                />
-                                <IconButton 
-                                    icon={<i className="fas fa-trash"></i>} 
-                                    onClick={() => {
-                                        const newSocials = data.socials.filter((_, i) => i !== idx);
-                                        setData({...data, socials: newSocials});
-                                    }} 
-                                    className="text-red-300 hover:text-red-500" 
-                                />
+                                <Input value={social.value} onChange={e => updateSocial(idx, 'value', e.target.value)} placeholder="Value" className="bg-white border-slate-200" />
+                                <Input value={social.url || ''} onChange={e => updateSocial(idx, 'url', e.target.value)} placeholder="URL (Optional)" className="text-blue-500 bg-white border-slate-200" />
+                                <IconButton icon={<i className="fas fa-trash"></i>} onClick={() => { const newSocials = data.socials.filter((_, i) => i !== idx); setData({...data, socials: newSocials}); }} className="text-red-300 hover:text-red-500" />
                             </div>
                         ))}
-                        <button 
-                            onClick={() => setData({...data, socials: [...data.socials, { id: Date.now().toString(), platform: 'Other', value: '' }]})}
-                            className="text-xs text-blue-600 font-semibold hover:bg-blue-50 px-2 py-1 rounded"
-                        >
+                        <button onClick={() => setData({...data, socials: [...data.socials, { id: Date.now().toString(), platform: 'Other', icon: 'fas fa-link', value: '' }]})} className="text-xs text-blue-600 font-semibold hover:bg-blue-50 px-2 py-1 rounded">
                             + Add Social
                         </button>
                     </div>
-
-                    <div className="mt-4 pt-4 border-t border-slate-100">
-                        <label className="text-xs font-semibold text-slate-500 uppercase mb-2 block">Footer / Additional Info</label>
-                        <div className="space-y-2">
-                            {data.additionalInfo.map((info, idx) => (
-                            <div key={info.id} className="flex gap-2 items-start">
-                                <RichInput 
-                                    value={info.content}
-                                    multiline
-                                    onChange={val => {
-                                        const newInfo = [...data.additionalInfo];
-                                        newInfo[idx].content = val;
-                                        setData({...data, additionalInfo: newInfo});
-                                    }}
-                                    placeholder="e.g. Languages: English, Spanish"
-                                    className="bg-white border-slate-200"
-                                />
-                                <IconButton 
-                                    icon={<i className="fas fa-trash"></i>} 
-                                    onClick={() => {
-                                        const newInfo = data.additionalInfo.filter((_, i) => i !== idx);
-                                        setData({...data, additionalInfo: newInfo});
-                                    }} 
-                                    className="text-red-300 hover:text-red-500 mt-2" 
-                                />
-                            </div>
-                            ))}
-                            <button 
-                                onClick={() => setData({...data, additionalInfo: [...data.additionalInfo, { id: Date.now().toString(), content: '' }]})}
-                                className="text-xs text-blue-600 font-semibold hover:bg-blue-50 px-2 py-1 rounded"
-                            >
-                                + Add Additional Info
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
-                {/* Sections List */}
                 <div className="space-y-6">
                     <div className="flex items-center justify-between mb-2">
                         <h2 className="font-bold text-lg text-slate-800">Resume Sections</h2>
@@ -328,7 +251,6 @@ export default function App() {
                             <i className="fas fa-magic"></i> Auto-Gen Summary
                         </button>
                     </div>
-                    
                     {data.sections.map((section, index) => (
                         <SectionEditor 
                             key={section.id} 
@@ -341,47 +263,31 @@ export default function App() {
                     ))}
                 </div>
 
-                {/* Add Section Buttons */}
                 <div className="mt-8 pt-6 border-t border-slate-200">
                     <h3 className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Add Section</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        <button onClick={() => handleAddSection('experience')} className="p-3 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-xl text-sm font-medium transition-all shadow-sm">
-                            <i className="fas fa-briefcase mr-2 opacity-50"></i> Experience
-                        </button>
-                        <button onClick={() => handleAddSection('education')} className="p-3 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-xl text-sm font-medium transition-all shadow-sm">
-                            <i className="fas fa-graduation-cap mr-2 opacity-50"></i> Education
-                        </button>
-                        <button onClick={() => handleAddSection('projects')} className="p-3 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-xl text-sm font-medium transition-all shadow-sm">
-                            <i className="fas fa-code mr-2 opacity-50"></i> Projects
-                        </button>
-                        <button onClick={() => handleAddSection('skills')} className="p-3 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-xl text-sm font-medium transition-all shadow-sm">
-                            <i className="fas fa-tools mr-2 opacity-50"></i> Skills
-                        </button>
-                        <button onClick={() => handleAddSection('summary')} className="p-3 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-xl text-sm font-medium transition-all shadow-sm">
-                            <i className="fas fa-align-left mr-2 opacity-50"></i> Summary
-                        </button>
-                        <button onClick={() => handleAddSection('custom')} className="p-3 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-xl text-sm font-medium transition-all shadow-sm">
-                            <i className="fas fa-layer-group mr-2 opacity-50"></i> Custom
-                        </button>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button onClick={() => handleAddSection('experience')} className="p-3 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-xl text-sm font-medium transition-all shadow-sm"><i className="fas fa-briefcase mr-2 opacity-50"></i> Experience</button>
+                        <button onClick={() => handleAddSection('education')} className="p-3 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-xl text-sm font-medium transition-all shadow-sm"><i className="fas fa-graduation-cap mr-2 opacity-50"></i> Education</button>
+                        <button onClick={() => handleAddSection('projects')} className="p-3 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-xl text-sm font-medium transition-all shadow-sm"><i className="fas fa-code mr-2 opacity-50"></i> Projects</button>
+                        <button onClick={() => handleAddSection('skills')} className="p-3 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-xl text-sm font-medium transition-all shadow-sm"><i className="fas fa-tools mr-2 opacity-50"></i> Skills</button>
+                        <button onClick={() => handleAddSection('summary')} className="p-3 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-xl text-sm font-medium transition-all shadow-sm"><i className="fas fa-align-left mr-2 opacity-50"></i> Summary</button>
+                        <button onClick={() => handleAddSection('additional')} className="p-3 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-xl text-sm font-medium transition-all shadow-sm"><i className="fas fa-plus-circle mr-2 opacity-50"></i> Additional</button>
+                        <button onClick={() => handleAddSection('custom')} className="p-3 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-xl text-sm font-medium transition-all shadow-sm"><i className="fas fa-layer-group mr-2 opacity-50"></i> Custom</button>
                     </div>
                 </div>
-                <div className="h-20"></div> {/* Spacer */}
+                <div className="h-20"></div>
             </div>
         </div>
 
-        {/* Preview Panel */}
         <div className={`flex-1 bg-slate-200/50 p-8 overflow-y-auto ${activeTab === 'editor' ? 'hidden' : 'block'} print:block print:p-0 print:bg-white print:overflow-visible w-full`}>
              {activeTab === 'code' ? (
-                 <div className="bg-slate-900 text-slate-100 p-6 rounded-xl shadow-inner font-mono text-sm whitespace-pre-wrap h-full overflow-auto border border-slate-700 print:hidden custom-scrollbar max-w-5xl mx-auto">
+                 <div className="bg-slate-900 text-slate-100 p-6 rounded-xl shadow-inner font-mono text-sm whitespace-pre-wrap h-full overflow-auto custom-scrollbar">
                     {latexCode}
                  </div>
              ) : (
-                <div className="h-full flex flex-col items-center print:block print:h-auto print:w-full">
-                    <LivePreview data={data} />
-                </div>
+                <LivePreview data={data} />
              )}
         </div>
-
       </div>
     </div>
   );

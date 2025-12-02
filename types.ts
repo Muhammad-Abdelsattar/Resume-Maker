@@ -3,13 +3,13 @@ export type SocialPlatform = 'LinkedIn' | 'GitHub' | 'Email' | 'Phone' | 'Locati
 
 export interface SocialLink {
   id: string;
-  platform: SocialPlatform; // Used for icon selection
-  label?: string; // e.g. "Portfolio"
+  platform: SocialPlatform; // Used for default icon selection
+  icon: string; // FontAwesome class, e.g., "fab fa-linkedin"
   value: string; // The displayed text
   url?: string; // The hyperlink
 }
 
-export type SectionType = 'summary' | 'experience' | 'education' | 'projects' | 'skills' | 'custom';
+export type SectionType = 'summary' | 'experience' | 'education' | 'projects' | 'skills' | 'custom' | 'additional';
 
 export interface SectionBase {
   id: string;
@@ -41,12 +41,13 @@ export interface ProjectLink {
   id: string;
   label: string;
   url: string;
+  icon: string; // e.g. "fab fa-github"
 }
 
 export interface ProjectItem {
   id: string;
   title: string;
-  links: ProjectLink[]; // Replaces fixed link/demoLink
+  links: ProjectLink[];
   skills: string;
   tools: string;
   bullets: string[];
@@ -68,6 +69,16 @@ export interface SkillsSection extends SectionBase {
   items: SkillItem[];
 }
 
+export interface AdditionalItem {
+  id: string;
+  content: string; // Rich text
+}
+
+export interface AdditionalSection extends SectionBase {
+  type: 'additional';
+  items: AdditionalItem[];
+}
+
 // --- Enhanced Custom Section ---
 export interface CustomColumn {
   id: string;
@@ -87,7 +98,7 @@ export interface CustomSection extends SectionBase {
   items: CustomRow[];
 }
 
-export type ResumeSection = SummarySection | ExperienceSection | ProjectSection | SkillsSection | CustomSection;
+export type ResumeSection = SummarySection | ExperienceSection | ProjectSection | SkillsSection | CustomSection | AdditionalSection;
 
 export interface ResumeSettings {
   themeColor: string;
@@ -104,7 +115,5 @@ export interface ResumeData {
   roleTitle: string;
   socials: SocialLink[];
   sections: ResumeSection[];
-  // Footer fields are now dynamic lists
-  additionalInfo: { id: string, content: string }[]; 
   settings: ResumeSettings;
 }

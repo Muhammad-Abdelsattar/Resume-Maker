@@ -7,11 +7,11 @@ export const INITIAL_RESUME_DATA: ResumeData = {
   fullName: "Muhammad Abd Al-sattar",
   roleTitle: "Data Engineer",
   socials: [
-    { id: 's1', platform: "Phone", value: "+201005755745" },
-    { id: 's2', platform: "Email", value: "muhammadabdalsattar@gmail.com", url: "mailto:muhammadabdalsattar@gmail.com" },
-    { id: 's3', platform: "Location", value: "Cairo, Egypt" },
-    { id: 's4', platform: "LinkedIn", value: "LinkedIn", url: "https://www.linkedin.com/in/muhammad-abd-al-sattar-611a091b2" },
-    { id: 's5', platform: "GitHub", value: "GitHub", url: "https://github.com/Muhammad-Abdelsattar" }
+    { id: 's1', platform: "Phone", icon: "fas fa-phone", value: "+201005755745" },
+    { id: 's2', platform: "Email", icon: "fas fa-envelope", value: "muhammadabdalsattar@gmail.com", url: "mailto:muhammadabdalsattar@gmail.com" },
+    { id: 's3', platform: "Location", icon: "fas fa-map-marker-alt", value: "Cairo, Egypt" },
+    { id: 's4', platform: "LinkedIn", icon: "fab fa-linkedin", value: "LinkedIn", url: "https://www.linkedin.com/in/muhammad-abd-al-sattar-611a091b2" },
+    { id: 's5', platform: "GitHub", icon: "fab fa-github", value: "GitHub", url: "https://github.com/Muhammad-Abdelsattar" }
   ],
   settings: {
     themeColor: "#3291c8",
@@ -80,8 +80,8 @@ export const INITIAL_RESUME_DATA: ResumeData = {
           id: 'p1',
           title: "Real-Time Fraud Detection System",
           links: [
-             { id: 'l1', label: "Source Code", url: "https://github.com/yourlink" },
-             { id: 'l2', label: "Live Demo", url: "https://demo.link" }
+             { id: 'l1', label: "Source Code", icon: "fab fa-github", url: "https://github.com/yourlink" },
+             { id: 'l2', label: "Live Demo", icon: "fas fa-external-link-alt", url: "https://demo.link" }
           ],
           skills: "Streaming & Batch Processing, ELT, Data Pipelines Architecture",
           tools: "GCP, Apache Beam, Spark, Docker, Bash, Airflow",
@@ -106,10 +106,15 @@ export const INITIAL_RESUME_DATA: ResumeData = {
             ]
         }
       ]
+    },
+    {
+      id: 'sec_additional',
+      type: 'additional',
+      title: 'Additional',
+      items: [
+         { id: 'ad1', content: "<b>Languages:</b> Arabic (Native), English (Fluent)" },
+         { id: 'ad2', content: "<b>Military Status:</b> Completed (10/2023 – 12/2024)" }
+      ]
     }
-  ],
-  additionalInfo: [
-     { id: 'ad1', content: "<b>Languages:</b> Arabic (Native), English (Fluent)" },
-     { id: 'ad2', content: "<b>Military Status:</b> Completed (10/2023 – 12/2024)" }
   ]
 };

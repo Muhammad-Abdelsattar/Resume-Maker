@@ -1,5 +1,5 @@
 
-import { ResumeData, ExperienceSection, ProjectSection, SkillsSection, SummarySection, CustomSection } from '../types';
+import { ResumeData, ExperienceSection, ProjectSection, SkillsSection, SummarySection, CustomSection, AdditionalSection } from '../types';
 
 declare var pdfMake: any;
 
@@ -296,47 +296,21 @@ export const generatePdf = (data: ResumeData) => {
       });
       content.push({ text: '', margin: [0, 0, 0, 8] });
     }
+    else if (section.type === 'additional') {
+      const s = section as AdditionalSection;
+      const footerParts: any[] = [];
+      s.items.forEach((info, i) => {
+        if (i > 0) footerParts.push({ text: ' | ', color: '#cbd5e1', bold: true });
+        footerParts.push(...parseRichText(info.content, { fontSize: sizes.small }));
+      });
+
+      content.push({
+        text: footerParts,
+        alignment: 'center',
+        margin: [0, 5, 0, 0]
+      });
+    }
   });
-
-  // --- 4. Footer Section ---
-  if (data.additionalInfo.length > 0) {
-    // Divider Line
-    content.push({
-      table: {
-        widths: ['*'],
-        body: [
-          [
-            {
-              text: 'ADDITIONAL',
-              fontSize: sizes.section,
-              bold: true,
-              color: primaryColor,
-              border: [false, false, false, true],
-              borderColor: [null, null, null, primaryColor],
-              margin: [0, 10, 0, 2]
-            }
-          ]
-        ]
-      },
-      layout: {
-          defaultBorder: false,
-          paddingBottom: () => 2
-      },
-      margin: [0, 0, 0, 8]
-    });
-
-    const footerParts: any[] = [];
-    data.additionalInfo.forEach((info, i) => {
-      if (i > 0) footerParts.push({ text: ' | ', color: '#cbd5e1', bold: true });
-      footerParts.push(...parseRichText(info.content, { fontSize: sizes.small }));
-    });
-
-    content.push({
-      text: footerParts,
-      alignment: 'center',
-      margin: [0, 5, 0, 0]
-    });
-  }
 
   // Define PDF Document
   const docDefinition = {

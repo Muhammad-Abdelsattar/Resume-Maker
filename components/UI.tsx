@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 
 export const Input = ({ className = "", ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input 
@@ -32,3 +32,62 @@ export const AddButton = ({ onClick, label }: { onClick: () => void, label: stri
     {label}
   </button>
 );
+
+// Common FontAwesome Icons for Resume
+const COMMON_ICONS = [
+  // Socials & Contact
+  'fas fa-envelope', 'fas fa-phone', 'fas fa-map-marker-alt', 'fas fa-globe', 'fas fa-link', 'fas fa-home',
+  'fab fa-linkedin', 'fab fa-github', 'fab fa-twitter', 'fab fa-medium', 'fab fa-dev',
+  'fab fa-gitlab', 'fab fa-bitbucket', 'fab fa-stackoverflow', 'fab fa-youtube', 'fab fa-instagram',
+  'fab fa-facebook', 'fab fa-whatsapp', 'fab fa-telegram', 'fab fa-discord', 'fab fa-slack', 'fab fa-skype',
+  
+  // Tech & Skills
+  'fas fa-code', 'fas fa-laptop-code', 'fas fa-database', 'fas fa-server', 'fas fa-cloud',
+  'fas fa-brain', 'fas fa-microchip', 'fas fa-robot', 'fas fa-cogs', 'fas fa-terminal',
+  'fas fa-network-wired', 'fas fa-wifi', 'fas fa-lock', 'fas fa-key', 'fas fa-bug',
+  'fab fa-aws', 'fab fa-google', 'fab fa-microsoft', 'fab fa-docker', 'fab fa-python', 
+  'fab fa-js', 'fab fa-react', 'fab fa-node', 'fab fa-java', 'fab fa-linux', 'fab fa-android',
+  'fab fa-apple', 'fab fa-windows', 'fab fa-html5', 'fab fa-css3', 'fab fa-sass',
+  
+  // Achievements & Misc
+  'fas fa-trophy', 'fas fa-medal', 'fas fa-certificate', 'fas fa-graduation-cap', 'fas fa-book',
+  'fas fa-briefcase', 'fas fa-building', 'fas fa-user-tie', 'fas fa-users',
+  'fas fa-star', 'fas fa-check', 'fas fa-check-circle', 'fas fa-play', 'fas fa-video', 'fas fa-file-alt',
+  'fas fa-chart-line', 'fas fa-chart-bar', 'fas fa-project-diagram', 'fas fa-lightbulb', 'fas fa-rocket'
+];
+
+export const IconPicker = ({ onSelect, onClose }: { onSelect: (icon: string) => void, onClose: () => void }) => {
+  const [search, setSearch] = useState('');
+
+  const filtered = COMMON_ICONS.filter(i => i.includes(search.toLowerCase()));
+
+  return (
+    <div className="absolute top-10 left-0 z-50 bg-white border border-slate-200 shadow-xl rounded-xl p-3 w-64 animate-in fade-in zoom-in-95 duration-200">
+      <div className="mb-2">
+         <input 
+           autoFocus
+           placeholder="Search icon..."
+           className="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-400"
+           value={search}
+           onChange={e => setSearch(e.target.value)}
+         />
+      </div>
+      <div className="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto custom-scrollbar p-1">
+        {filtered.map(icon => (
+           <button 
+             key={icon}
+             onClick={(e) => { e.stopPropagation(); onSelect(icon); onClose(); }}
+             className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors text-sm"
+             title={icon}
+           >
+             <i className={icon}></i>
+           </button>
+        ))}
+      </div>
+      <div className="mt-2 pt-2 border-t border-slate-100 flex justify-between items-center">
+         <span className="text-[10px] text-slate-400">FontAwesome 5</span>
+         <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="text-xs text-red-400 hover:text-red-500">Close</button>
+      </div>
+    </div>
+  );
+};
