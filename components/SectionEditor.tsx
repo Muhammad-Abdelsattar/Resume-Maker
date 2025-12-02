@@ -65,7 +65,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({ section, onUpdate,
         multiline
         placeholder="Write your professional summary..."
         />
-        <p className="text-[10px] text-slate-400 mt-2 flex items-center gap-1"><i className="fas fa-info-circle"></i> Use the toolbar to add bold, italics, links, alignment, or icons.</p>
+        <p className="text-[10px] text-slate-400 mt-2 flex items-center gap-1"><i className="fas fa-info-circle"></i> Use the toolbar to add bold, italics, links, or icons.</p>
     </div>
   );
 
@@ -170,30 +170,41 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({ section, onUpdate,
 
           <div className="mb-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block">Links</label>
-             <div className="flex flex-wrap gap-2">
+             <div className="flex flex-col gap-2">
                 {item.links.map((link, lIdx) => (
-                   <div key={link.id} className="flex items-center gap-2 bg-white border border-slate-200 rounded px-2 py-1 text-sm shadow-sm group/link">
-                       <div className="relative">
-                            <button 
-                                onClick={() => setIconPickerIdx({ type: 'project', idx, subIdx: lIdx })}
-                                className="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-blue-600 bg-slate-100 rounded hover:bg-blue-50 transition-colors"
-                            >
-                                <i className={link.icon || 'fas fa-link'}></i>
-                            </button>
-                            {iconPickerIdx?.type === 'project' && iconPickerIdx.idx === idx && iconPickerIdx.subIdx === lIdx && (
-                                <IconPicker 
-                                    onSelect={(icon) => {
-                                        const newLinks = [...item.links];
-                                        newLinks[lIdx].icon = icon;
-                                        updateItem(idx, {...item, links: newLinks});
-                                        setIconPickerIdx(null);
-                                    }}
-                                    onClose={() => setIconPickerIdx(null)}
-                                />
-                            )}
+                   <div key={link.id} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white border border-slate-200 rounded px-2 py-2 text-sm shadow-sm group/link">
+                       <div className="flex items-center gap-2">
+                           <div className="relative shrink-0">
+                                <button 
+                                    onClick={() => setIconPickerIdx({ type: 'project', idx, subIdx: lIdx })}
+                                    className="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-blue-600 bg-slate-100 rounded hover:bg-blue-50 transition-colors"
+                                >
+                                    <i className={link.icon || 'fas fa-link'}></i>
+                                </button>
+                                {iconPickerIdx?.type === 'project' && iconPickerIdx.idx === idx && iconPickerIdx.subIdx === lIdx && (
+                                    <IconPicker 
+                                        onSelect={(icon) => {
+                                            const newLinks = [...item.links];
+                                            newLinks[lIdx].icon = icon;
+                                            updateItem(idx, {...item, links: newLinks});
+                                            setIconPickerIdx(null);
+                                        }}
+                                        onClose={() => setIconPickerIdx(null)}
+                                    />
+                                )}
+                           </div>
+                           
+                           {/* Mobile Reorder controls moved here for access */}
+                           <div className="flex sm:hidden gap-1 ml-auto">
+                                <IconButton icon={<i className="fas fa-times"></i>} onClick={() => {
+                                    const newLinks = item.links.filter((_, i) => i !== lIdx);
+                                    updateItem(idx, {...item, links: newLinks});
+                                }} className="text-slate-400 hover:text-red-500" />
+                           </div>
                        </div>
+
                        <input 
-                         className="w-20 outline-none text-slate-700 font-medium bg-transparent border-b border-transparent focus:border-blue-400"
+                         className="w-full sm:w-24 outline-none text-slate-700 font-medium bg-transparent border-b border-transparent focus:border-blue-400 placeholder:text-slate-300"
                          value={link.label}
                          onChange={e => {
                             const newLinks = [...item.links];
@@ -202,20 +213,22 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({ section, onUpdate,
                          }}
                          placeholder="Label"
                        />
-                       <div className="w-px h-3 bg-slate-200"></div>
+                       
+                       <div className="hidden sm:block w-px h-3 bg-slate-200"></div>
+                       
                        <input 
-                         className="w-32 outline-none text-blue-600 text-xs bg-transparent border-b border-transparent focus:border-blue-400"
+                         className="w-full sm:flex-1 outline-none text-blue-600 text-xs bg-transparent border-b border-transparent focus:border-blue-400 placeholder:text-blue-200"
                          value={link.url}
                          onChange={e => {
                             const newLinks = [...item.links];
                             newLinks[lIdx].url = e.target.value;
                             updateItem(idx, {...item, links: newLinks});
                          }}
-                         placeholder="URL"
+                         placeholder="https://..."
                        />
                        
-                       {/* Link Reordering & Delete */}
-                       <div className="flex gap-1 opacity-0 group-hover/link:opacity-100 transition-opacity">
+                       {/* Desktop Link Reordering & Delete */}
+                       <div className="hidden sm:flex gap-1 opacity-0 group-hover/link:opacity-100 transition-opacity">
                             <button onClick={() => {
                                 const newLinks = [...item.links];
                                 if (lIdx > 0) {
@@ -239,7 +252,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({ section, onUpdate,
                 ))}
                 <button 
                   onClick={() => updateItem(idx, {...item, links: [...item.links, { id: Date.now().toString(), label: "Link", url: "", icon: "fas fa-link" }]})}
-                  className="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs hover:bg-blue-100 font-medium transition-colors"
+                  className="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs hover:bg-blue-100 font-medium transition-colors w-fit"
                 >
                    + Add Link
                 </button>
@@ -350,7 +363,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({ section, onUpdate,
   );
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6 transition-all hover:shadow-md">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm mb-6 transition-all hover:shadow-md">
       <div 
         className="bg-slate-50 px-6 py-4 flex items-center justify-between cursor-pointer border-b border-slate-100"
         onClick={() => setIsOpen(!isOpen)}
@@ -359,23 +372,23 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({ section, onUpdate,
             <div className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} text-slate-400`}>
                 <i className="fas fa-chevron-down"></i>
             </div>
-            <div onClick={e => e.stopPropagation()} className="w-64">
+            <div onClick={e => e.stopPropagation()} className="w-64 max-w-[50vw]">
                  <input type="text" value={section.title} onChange={(e) => onUpdate({...section, title: e.target.value})} className="bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-400 rounded px-2 py-1 font-bold text-slate-700 text-lg outline-none w-full transition-all" />
             </div>
-            <span className="text-xs font-mono text-slate-400 uppercase bg-slate-100 px-2 py-1 rounded border border-slate-200">
+            <span className="hidden sm:inline text-xs font-mono text-slate-400 uppercase bg-slate-100 px-2 py-1 rounded border border-slate-200">
                 {section.type}
             </span>
         </div>
         <div className="flex items-center gap-2">
             <IconButton icon={<i className="fas fa-arrow-up"></i>} onClick={onMoveUp} title="Move Up" />
             <IconButton icon={<i className="fas fa-arrow-down"></i>} onClick={onMoveDown} title="Move Down" />
-            <div className="w-px h-4 bg-slate-300 mx-1"></div>
+            <div className="w-px h-4 bg-slate-300 mx-1 hidden sm:block"></div>
             <IconButton icon={<i className="fas fa-trash"></i>} onClick={onDelete} className="text-red-400 hover:text-red-600 hover:bg-red-50" title="Delete Section" />
         </div>
       </div>
 
       {isOpen && (
-        <div className="p-6 bg-slate-50/50">
+        <div className="p-4 sm:p-6 bg-slate-50/50">
            {section.type === 'summary' && renderSummaryEditor(section as SummarySection)}
            {(section.type === 'experience' || section.type === 'education') && renderExperienceEditor(section as ExperienceSection)}
            {section.type === 'projects' && renderProjectEditor(section as ProjectSection)}

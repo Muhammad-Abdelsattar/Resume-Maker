@@ -71,26 +71,6 @@ export const RichInput: React.FC<RichInputProps> = ({ value, onChange, placehold
     onChange(`${before}<a href="${url}">${linkText}</a>${after}`);
   };
 
-  // Insert Alignment Div
-  const applyAlignment = (align: 'left' | 'center' | 'right') => {
-    const el = inputRef.current;
-    if (!el) return;
-    const start = el.selectionStart || 0;
-    const end = el.selectionEnd || 0;
-    const text = el.value;
-    const selected = text.substring(start, end);
-    
-    if (!selected) return; // Must select text to align
-
-    // Check if already aligned (simplified check)
-    // We strictly wrap the selected text. 
-    // LivePreview handles <div style="text-align:...">
-    const divStart = `<div style="text-align: ${align};">`;
-    const divEnd = `</div>`;
-    
-    onChange(`${text.substring(0, start)}${divStart}${selected}${divEnd}${text.substring(end)}`);
-  };
-
   // Insert Icon
   const insertIcon = (iconClass: string) => {
     const el = inputRef.current;
@@ -99,6 +79,7 @@ export const RichInput: React.FC<RichInputProps> = ({ value, onChange, placehold
     const text = el.value;
     const iconTag = `<i class="${iconClass}"></i> `;
     onChange(`${text.substring(0, start)}${iconTag}${text.substring(start)}`);
+    setShowIcons(false);
   };
 
   const Component = multiline ? 'textarea' : 'input';
@@ -122,14 +103,16 @@ export const RichInput: React.FC<RichInputProps> = ({ value, onChange, placehold
         <button onMouseDown={(e) => { e.preventDefault(); insertTag('b'); }} className="w-6 h-6 flex items-center justify-center hover:bg-slate-700 rounded text-xs font-bold" title="Bold">B</button>
         <button onMouseDown={(e) => { e.preventDefault(); insertTag('i'); }} className="w-6 h-6 flex items-center justify-center hover:bg-slate-700 rounded text-xs italic" title="Italic">I</button>
         <div className="w-px h-4 bg-slate-600 mx-1"></div>
-        <button onMouseDown={(e) => { e.preventDefault(); applyAlignment('left'); }} className="w-6 h-6 flex items-center justify-center hover:bg-slate-700 rounded text-xs" title="Align Left"><i className="fas fa-align-left"></i></button>
-        <button onMouseDown={(e) => { e.preventDefault(); applyAlignment('center'); }} className="w-6 h-6 flex items-center justify-center hover:bg-slate-700 rounded text-xs" title="Align Center"><i className="fas fa-align-center"></i></button>
-        <button onMouseDown={(e) => { e.preventDefault(); applyAlignment('right'); }} className="w-6 h-6 flex items-center justify-center hover:bg-slate-700 rounded text-xs" title="Align Right"><i className="fas fa-align-right"></i></button>
-        <div className="w-px h-4 bg-slate-600 mx-1"></div>
         <button onMouseDown={(e) => { e.preventDefault(); insertLink(); }} className="w-6 h-6 flex items-center justify-center hover:bg-slate-700 rounded text-xs" title="Link"><i className="fas fa-link"></i></button>
         <div className="relative">
              <button onMouseDown={(e) => { e.preventDefault(); setShowIcons(!showIcons); }} className="w-6 h-6 flex items-center justify-center hover:bg-slate-700 rounded text-xs" title="Insert Icon"><i className="fas fa-icons"></i></button>
-             {showIcons && <IconPicker onSelect={insertIcon} onClose={() => setShowIcons(false)} />}
+             {showIcons && (
+                <IconPicker 
+                    onSelect={insertIcon} 
+                    onClose={() => setShowIcons(false)} 
+                    className="sm:right-0 sm:left-auto" 
+                />
+             )}
         </div>
       </div>
     </div>

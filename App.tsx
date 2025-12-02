@@ -101,7 +101,7 @@ export default function App() {
   const TabButton = ({ id, label, icon }: any) => (
     <button 
       onClick={() => setActiveTab(id)}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${activeTab === id ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:bg-white/50 hover:text-slate-700'}`}
+      className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all ${activeTab === id ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:bg-white/50 hover:text-slate-700'}`}
     >
       {icon} {label}
     </button>
@@ -109,8 +109,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col h-screen text-slate-800 font-sans print:h-auto print:bg-white print:overflow-visible">
-      <header className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shrink-0 z-20 print:hidden shadow-sm">
-        <div className="flex items-center gap-3">
+      {/* Responsive Header */}
+      <header className="bg-white border-b border-slate-200 px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-3 shrink-0 z-20 print:hidden shadow-sm">
+        <div className="flex items-center gap-3 self-start md:self-auto">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-blue-200 shadow-lg">R</div>
             <div>
                 <h1 className="font-bold text-lg leading-tight">ResuMake</h1>
@@ -118,18 +119,18 @@ export default function App() {
             </div>
         </div>
         
-        <div className="flex bg-slate-100 p-1 rounded-xl">
+        <div className="flex bg-slate-100 p-1 rounded-xl w-full md:w-auto justify-center">
              <TabButton id="editor" label="Editor" icon={<i className="fas fa-pen"></i>} />
              <TabButton id="preview" label="Preview" icon={<i className="fas fa-eye"></i>} />
              <TabButton id="code" label="LaTeX" icon={<i className="fas fa-code"></i>} />
         </div>
 
-        <div className="flex gap-2">
-            <button onClick={handleDownloadPDF} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all shadow-lg shadow-blue-200 active:scale-95">
-                <i className="fas fa-print"></i> Print / PDF
+        <div className="flex gap-2 w-full md:w-auto justify-end">
+            <button onClick={handleDownloadPDF} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all shadow-lg shadow-blue-200 active:scale-95">
+                <i className="fas fa-print"></i> PDF
             </button>
-            <button onClick={copyToClipboard} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-200 active:scale-95">
-                {isCopied ? <i className="fas fa-check text-green-400"></i> : <i className="fas fa-copy"></i>} {isCopied ? 'Copied!' : 'Copy LaTeX'}
+            <button onClick={copyToClipboard} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-200 active:scale-95">
+                {isCopied ? <i className="fas fa-check text-green-400"></i> : <i className="fas fa-copy"></i>} {isCopied ? 'Copied' : 'LaTeX'}
             </button>
         </div>
       </header>
@@ -139,7 +140,8 @@ export default function App() {
             
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 max-w-5xl mx-auto">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Document Settings</h3>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                {/* Responsive Grid for Settings */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 gap-3">
                     <div>
                         <label className="block text-[10px] font-semibold text-slate-500 mb-1">Theme Color</label>
                         <div className="flex items-center gap-2">
@@ -205,37 +207,41 @@ export default function App() {
                     <div className="space-y-3">
                         <label className="text-xs font-semibold text-slate-500 uppercase block">Contact Info & Socials</label>
                         {data.socials.map((social, idx) => (
-                            <div key={social.id} className="flex gap-2 items-center group">
-                                <div className="relative">
-                                    <button 
-                                        onClick={() => setIconPickerIdx(idx)}
-                                        className="w-10 h-10 flex items-center justify-center bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-lg transition-colors border border-slate-200"
+                            <div key={social.id} className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center bg-slate-50 sm:bg-transparent p-2 sm:p-0 rounded-xl border sm:border-0 border-slate-100 group">
+                                <div className="flex gap-2 items-center">
+                                    <div className="relative shrink-0">
+                                        <button 
+                                            onClick={() => setIconPickerIdx(idx)}
+                                            className="w-10 h-10 flex items-center justify-center bg-white sm:bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-lg transition-colors border border-slate-200"
+                                        >
+                                            <i className={social.icon || 'fas fa-link'}></i>
+                                        </button>
+                                        {iconPickerIdx === idx && (
+                                            <IconPicker 
+                                                onSelect={(icon) => { updateSocial(idx, 'icon', icon); setIconPickerIdx(null); }}
+                                                onClose={() => setIconPickerIdx(null)}
+                                            />
+                                        )}
+                                    </div>
+                                    <select 
+                                        value={social.platform}
+                                        onChange={e => updateSocial(idx, 'platform', e.target.value)}
+                                        className="w-full sm:w-28 text-sm text-slate-600 font-medium bg-white px-2 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-400 transition-colors"
                                     >
-                                        <i className={social.icon || 'fas fa-link'}></i>
-                                    </button>
-                                    {iconPickerIdx === idx && (
-                                        <IconPicker 
-                                            onSelect={(icon) => { updateSocial(idx, 'icon', icon); setIconPickerIdx(null); }}
-                                            onClose={() => setIconPickerIdx(null)}
-                                        />
-                                    )}
+                                        <option value="Phone">Phone</option>
+                                        <option value="Email">Email</option>
+                                        <option value="Location">Location</option>
+                                        <option value="LinkedIn">LinkedIn</option>
+                                        <option value="GitHub">GitHub</option>
+                                        <option value="Portfolio">Portfolio</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <IconButton icon={<i className="fas fa-trash"></i>} onClick={() => { const newSocials = data.socials.filter((_, i) => i !== idx); setData({...data, socials: newSocials}); }} className="sm:hidden ml-auto text-red-400" />
                                 </div>
-                                <select 
-                                    value={social.platform}
-                                    onChange={e => updateSocial(idx, 'platform', e.target.value)}
-                                    className="w-28 shrink-0 text-sm text-slate-600 font-medium bg-white px-2 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-400 transition-colors"
-                                >
-                                    <option value="Phone">Phone</option>
-                                    <option value="Email">Email</option>
-                                    <option value="Location">Location</option>
-                                    <option value="LinkedIn">LinkedIn</option>
-                                    <option value="GitHub">GitHub</option>
-                                    <option value="Portfolio">Portfolio</option>
-                                    <option value="Other">Other</option>
-                                </select>
+                                
                                 <Input value={social.value} onChange={e => updateSocial(idx, 'value', e.target.value)} placeholder="Value" className="bg-white border-slate-200" />
                                 <Input value={social.url || ''} onChange={e => updateSocial(idx, 'url', e.target.value)} placeholder="URL (Optional)" className="text-blue-500 bg-white border-slate-200" />
-                                <IconButton icon={<i className="fas fa-trash"></i>} onClick={() => { const newSocials = data.socials.filter((_, i) => i !== idx); setData({...data, socials: newSocials}); }} className="text-red-300 hover:text-red-500" />
+                                <IconButton icon={<i className="fas fa-trash"></i>} onClick={() => { const newSocials = data.socials.filter((_, i) => i !== idx); setData({...data, socials: newSocials}); }} className="hidden sm:block text-red-300 hover:text-red-500" />
                             </div>
                         ))}
                         <button onClick={() => setData({...data, socials: [...data.socials, { id: Date.now().toString(), platform: 'Other', icon: 'fas fa-link', value: '' }]})} className="text-xs text-blue-600 font-semibold hover:bg-blue-50 px-2 py-1 rounded">

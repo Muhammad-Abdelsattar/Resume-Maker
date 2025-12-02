@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 export const Input = ({ className = "", ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input 
-    className={`w-full bg-slate-50 border border-slate-200 hover:border-slate-300 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 outline-none placeholder:text-slate-400 ${className}`}
+    className={`w-full min-w-0 bg-slate-50 border border-slate-200 hover:border-slate-300 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 outline-none placeholder:text-slate-400 ${className}`}
     {...props}
   />
 );
@@ -44,50 +44,64 @@ const COMMON_ICONS = [
   // Tech & Skills
   'fas fa-code', 'fas fa-laptop-code', 'fas fa-database', 'fas fa-server', 'fas fa-cloud',
   'fas fa-brain', 'fas fa-microchip', 'fas fa-robot', 'fas fa-cogs', 'fas fa-terminal',
-  'fas fa-network-wired', 'fas fa-wifi', 'fas fa-lock', 'fas fa-key', 'fas fa-bug',
-  'fab fa-aws', 'fab fa-google', 'fab fa-microsoft', 'fab fa-docker', 'fab fa-python', 
-  'fab fa-js', 'fab fa-react', 'fab fa-node', 'fab fa-java', 'fab fa-linux', 'fab fa-android',
-  'fab fa-apple', 'fab fa-windows', 'fab fa-html5', 'fab fa-css3', 'fab fa-sass',
+  'fas fa-layer-group', 'fas fa-cubes', 'fas fa-network-wired', 'fas fa-project-diagram',
+  'fas fa-chart-bar', 'fas fa-chart-line', 'fas fa-chart-pie', 'fas fa-table', 'fas fa-file-alt',
   
-  // Achievements & Misc
-  'fas fa-trophy', 'fas fa-medal', 'fas fa-certificate', 'fas fa-graduation-cap', 'fas fa-book',
-  'fas fa-briefcase', 'fas fa-building', 'fas fa-user-tie', 'fas fa-users',
-  'fas fa-star', 'fas fa-check', 'fas fa-check-circle', 'fas fa-play', 'fas fa-video', 'fas fa-file-alt',
-  'fas fa-chart-line', 'fas fa-chart-bar', 'fas fa-project-diagram', 'fas fa-lightbulb', 'fas fa-rocket'
+  // Awards & Certs
+  'fas fa-trophy', 'fas fa-medal', 'fas fa-certificate', 'fas fa-award', 'fas fa-star', 'fas fa-crown',
+  
+  // Misc
+  'fas fa-user', 'fas fa-briefcase', 'fas fa-graduation-cap', 'fas fa-university', 'fas fa-building',
+  'fas fa-calendar-alt', 'fas fa-clock', 'fas fa-check-circle', 'fas fa-external-link-alt'
 ];
 
-export const IconPicker = ({ onSelect, onClose }: { onSelect: (icon: string) => void, onClose: () => void }) => {
+export const IconPicker = ({ onSelect, onClose, className = "" }: { onSelect: (icon: string) => void, onClose: () => void, className?: string }) => {
   const [search, setSearch] = useState('');
-
-  const filtered = COMMON_ICONS.filter(i => i.includes(search.toLowerCase()));
+  const filteredIcons = COMMON_ICONS.filter(icon => icon.includes(search.toLowerCase()));
 
   return (
-    <div className="absolute top-10 left-0 z-50 bg-white border border-slate-200 shadow-xl rounded-xl p-3 w-64 animate-in fade-in zoom-in-95 duration-200">
-      <div className="mb-2">
-         <input 
-           autoFocus
-           placeholder="Search icon..."
-           className="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-400"
-           value={search}
-           onChange={e => setSearch(e.target.value)}
-         />
+    <>
+      {/* Backdrop to catch clicks outside */}
+      <div className="fixed inset-0 z-[100]" onClick={onClose}></div>
+
+      {/* Picker Container */}
+      <div 
+        className={`bg-white border border-slate-200 shadow-xl rounded-xl p-3 w-64 z-[101]
+        /* Mobile: Fixed Center Modal */
+        fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+        /* Desktop: Absolute Dropdown (Position controlled by parent/className) */
+        sm:absolute sm:top-full sm:translate-x-0 sm:translate-y-2
+        /* Default Desktop Alignment: Left */
+        ${className || 'sm:left-0'} 
+        `}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-2 relative">
+             <i className="fas fa-search absolute left-2 top-2.5 text-slate-400 text-xs"></i>
+            <input
+            autoFocus
+            className="w-full text-xs pl-7 pr-2 py-2 border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-slate-50 focus:bg-white transition-colors"
+            placeholder="Search icons..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            />
+        </div>
+        <div className="grid grid-cols-6 gap-1 max-h-48 overflow-y-auto custom-scrollbar">
+          {filteredIcons.map(icon => (
+            <button
+              key={icon}
+              onClick={() => onSelect(icon)}
+              className="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm"
+              title={icon}
+            >
+              <i className={icon}></i>
+            </button>
+          ))}
+          {filteredIcons.length === 0 && (
+              <p className="col-span-6 text-center text-[10px] text-slate-400 py-4">No icons found</p>
+          )}
+        </div>
       </div>
-      <div className="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto custom-scrollbar p-1">
-        {filtered.map(icon => (
-           <button 
-             key={icon}
-             onClick={(e) => { e.stopPropagation(); onSelect(icon); onClose(); }}
-             className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors text-sm"
-             title={icon}
-           >
-             <i className={icon}></i>
-           </button>
-        ))}
-      </div>
-      <div className="mt-2 pt-2 border-t border-slate-100 flex justify-between items-center">
-         <span className="text-[10px] text-slate-400">FontAwesome 5</span>
-         <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="text-xs text-red-400 hover:text-red-500">Close</button>
-      </div>
-    </div>
+    </>
   );
 };
