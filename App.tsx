@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { ResumeData, ResumeSection, SectionType, SummarySection } from './types';
 import { INITIAL_RESUME_DATA } from './constants';
-import { generateLatex } from './services/latexGenerator';
 import { SectionEditor } from './components/SectionEditor';
 import { Input, IconButton, IconPicker } from './components/UI';
 import { LivePreview } from './components/LivePreview';
@@ -10,21 +9,8 @@ import { generateSummary } from './services/geminiService';
 
 export default function App() {
   const [data, setData] = useState<ResumeData>(INITIAL_RESUME_DATA);
-  const [latexCode, setLatexCode] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'editor' | 'preview' | 'code'>('editor');
-  const [isCopied, setIsCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
   const [iconPickerIdx, setIconPickerIdx] = useState<number | null>(null);
-
-  useEffect(() => {
-    const code = generateLatex(data);
-    setLatexCode(code);
-  }, [data]);
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(latexCode);
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
-  };
 
   const handleDownloadPDF = async () => {
     window.print();
@@ -122,15 +108,11 @@ export default function App() {
         <div className="flex bg-slate-100 p-1 rounded-xl w-full md:w-auto justify-center">
              <TabButton id="editor" label="Editor" icon={<i className="fas fa-pen"></i>} />
              <TabButton id="preview" label="Preview" icon={<i className="fas fa-eye"></i>} />
-             <TabButton id="code" label="LaTeX" icon={<i className="fas fa-code"></i>} />
         </div>
 
         <div className="flex gap-2 w-full md:w-auto justify-end">
             <button onClick={handleDownloadPDF} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all shadow-lg shadow-blue-200 active:scale-95">
-                <i className="fas fa-print"></i> PDF
-            </button>
-            <button onClick={copyToClipboard} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-200 active:scale-95">
-                {isCopied ? <i className="fas fa-check text-green-400"></i> : <i className="fas fa-copy"></i>} {isCopied ? 'Copied' : 'LaTeX'}
+                <i className="fas fa-print"></i> Print / PDF
             </button>
         </div>
       </header>
@@ -286,13 +268,7 @@ export default function App() {
         </div>
 
         <div className={`flex-1 bg-slate-200/50 p-8 overflow-y-auto ${activeTab === 'editor' ? 'hidden' : 'block'} print:block print:p-0 print:bg-white print:overflow-visible w-full`}>
-             {activeTab === 'code' ? (
-                 <div className="bg-slate-900 text-slate-100 p-6 rounded-xl shadow-inner font-mono text-sm whitespace-pre-wrap h-full overflow-auto custom-scrollbar">
-                    {latexCode}
-                 </div>
-             ) : (
-                <LivePreview data={data} />
-             )}
+            <LivePreview data={data} />
         </div>
       </div>
     </div>

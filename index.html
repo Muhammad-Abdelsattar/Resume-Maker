@@ -14,9 +14,16 @@
       .font-mono { font-family: 'JetBrains Mono', monospace; }
       
       /* Rich Text Editor Styles */
+      .rich-input { min-height: 42px; }
+      .rich-input:empty::before {
+        content: attr(data-placeholder);
+        color: #94a3b8; /* Slate-400 */
+        pointer-events: none;
+        display: block;
+      }
       .rich-input b, .rich-input strong { font-weight: bold; }
       .rich-input i, .rich-input em { font-style: italic; }
-      .rich-input a { color: #2563eb; text-decoration: underline; }
+      .rich-input a { color: #2563eb; text-decoration: underline; cursor: pointer; }
 
       /* Custom Scrollbars */
       ::-webkit-scrollbar {
